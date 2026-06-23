@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Love You</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #e8002d;
+            --soft-red: #ff4d6d;
+            --text-dark: #333;
+            --text-gray: #888;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #fff;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Playfair Display', serif;
+            position: relative;
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Typography */
+        .title {
+            font-size: clamp(3rem, 10vw, 5rem);
+            color: var(--primary-red);
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s forwards 0.5s;
+            overflow: hidden;
+        }
+        .title::after {
+            content: 'I Love You';
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%;
+            background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 3s infinite linear;
+        }
+
+        .subtitle {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            color: var(--text-dark);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s forwards 1s;
+            opacity: 0.8;
+        }
+
+        .tagline {
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 1s forwards 1.5s;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Button */
+        .btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(232, 0, 45, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 1s forwards 2s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(232, 0, 45, 0.6);
+        }
+
+        #canvas-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        * { cursor: none !important; }
+
+        /* Particles */
+        .petal, .burst-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 5;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas-overlay"></canvas>
+
+    <div class="container">
+        <h1 class="title">I Love You</h1>
+        <p class="subtitle">Forever & Always</p>
+        <p class="tagline">You are my everything</p>
+        <button class="btn" id="loveBtn">Send Love ♥</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas-overlay');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let mouse = { x: -100, y: -100 };
+        let butterflies = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        class Butterfly {
+            constructor(index) {
+                this.index = index;
+                this.pos = { x: -100, y: -100 };
+                this.target = { x: -100, y: -100 };
+                this.size = Math.random() * 5 + 5;
+                this.color = `hsl(${Math.random() * 20}, 100%, ${40 + Math.random() * 20}%)`;
+                this.angle = 0;
+            }
+            update(prevPos) {
+                this.pos.x += (prevPos.x - this.pos.x) * 0.2;
+                this.pos.y += (prevPos.y - this.pos.y) * 0.2;
+                this.angle += 0.2;
+            }
+            draw() {
+                const flap = Math.sin(this.angle) * 0.5 + 0.5;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.ellipse(this.pos.x - 3 * flap, this.pos.y, 4, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(this.pos.x + 3 * flap, this.pos.y, 4, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(this.pos.x, this.pos.y, 1, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for(let i=0; i<10; i++) butterflies.push(new Butterfly(i));
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#e8002d';
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, 3, 0, Math.PI*2);
+            ctx.fill();
+
+            let prev = { ...mouse };
+            butterflies.forEach(b => {
+                b.update(prev);
+                b.draw();
+                prev = { ...b.pos };
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Petals
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            petal.innerText = ['♥', '❤', '🌹'][Math.floor(Math.random() * 3)];
+            petal.style.left = Math.random() * 100 + 'vw';
+            petal.style.top = '-20px';
+            petal.style.fontSize = (Math.random() * 10 + 15) + 'px';
+            petal.style.opacity = Math.random() * 0.5 + 0.5;
+            document.body.appendChild(petal);
+
+            const duration = Math.random() * 3 + 4;
+            const anim = petal.animate([
+                { transform: 'translateY(0) rotate(0deg)', opacity: 0 },
+                { opacity: 1, offset: 0.2 },
+                { transform: `translateY(${window.innerHeight + 50}px) rotate(720deg)`, opacity: 0 }
+            ], {
+                duration: duration * 1000,
+                easing: 'linear'
+            });
+
+            anim.onfinish = () => petal.remove();
+        }
+        setInterval(createPetal, 600);
+        for(let i=0; i<5; i++) setTimeout(createPetal, i * 300);
+
+        // Burst Hearts
+        function spawnHeart(x, y, isBig = false) {
+            const heart = document.createElement('div');
+            heart.className = 'burst-heart';
+            heart.innerText = '❤';
+            heart.style.left = x + 'px';
+            heart.style.top = y + 'px';
+            heart.style.color = 'var(--primary-red)';
+            heart.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            document.body.appendChild(heart);
+
+            const angle = Math.random() * Math.PI * 2;
+            const dist = isBig ? Math.random() * 200 + 50 : Math.random() * 100 + 20;
+            const tx = Math.cos(angle) * dist;
+            const ty = Math.sin(angle) * dist;
+
+            const anim = heart.animate([
+                { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+            ], {
+                duration: 1000 + Math.random() * 1000,
+                easing: 'ease-out'
+            });
+
+            anim.onfinish = () => heart.remove();
+        }
+
+        window.addEventListener('mousedown', (e) => {
+            if (e.target.id === 'loveBtn') return;
+            for(let i=0; i<10; i++) spawnHeart(e.clientX, e.clientY);
+        });
+
+        document.getElementById('loveBtn').addEventListener('click', (e) => {
+            for(let i=0; i<30; i++) {
+                setTimeout(() => {
+                    const rx = Math.random() * window.innerWidth;
+                    const ry = Math.random() * window.innerHeight;
+                    spawnHeart(rx, ry, true);
+                }, i * 30);
+            }
+        });
+    </script>
+</body>
+</html>
